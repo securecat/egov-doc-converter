@@ -15,6 +15,8 @@
     --text-muted: #5b6b7c;
     --accent: #1f4e79;
     --accent-2: #2f6fa5;
+    --accent-solid: #1f4e79;
+    --accent-solid-hover: #163a5c;
     --accent-soft: #e7f0f8;
     --danger: #b3261e;
     --danger-soft: #fdecea;
@@ -32,8 +34,9 @@
       --border-strong: #7d8a9c;
       --text: #e7ecf2;
       --text-muted: #98a4b3;
-      --accent: #5b9bd9;
+      --accent: #7db3e8;
       --accent-2: #7db3e8;
+      --accent-solid: #245579;
       --accent-soft: #22303e;
       --danger: #ff8a80;
       --danger-soft: #3a2323;
@@ -50,8 +53,9 @@
     --border-strong: #7d8a9c;
     --text: #e7ecf2;
     --text-muted: #98a4b3;
-    --accent: #5b9bd9;
+    --accent: #7db3e8;
     --accent-2: #7db3e8;
+    --accent-solid: #245579;
     --accent-soft: #22303e;
     --danger: #ff8a80;
     --danger-soft: #3a2323;
@@ -65,7 +69,7 @@
     margin: 0;
     background: var(--bg);
     color: var(--text);
-    font-family: "Hiragino Kaku Gothic ProN", "Yu Gothic", "Noto Sans JP", sans-serif;
+    font-family: sans-serif;
     font-size: 16px;
     line-height: 1.7;
   }
@@ -202,8 +206,8 @@
     outline: 2px solid var(--accent-2);
     outline-offset: 3px;
   }
-  .btn-primary { background: var(--accent); color: #fff; }
-  .btn-primary:hover:not(:disabled) { background: var(--accent-2); }
+  .btn-primary { background: var(--accent-solid); color: #fff; border-color: var(--border-strong); }
+  .btn-primary:hover:not(:disabled) { background: var(--accent-solid-hover); }
   button.btn-secondary { background: var(--surface-2); color: var(--text); border-color: var(--text); }
   button.btn-secondary:hover:not(:disabled) { background: var(--accent-soft); border-color: var(--accent-2); }
   button.btn-clear { background: transparent; color: var(--text-muted); border-color: var(--text-muted); margin-left: auto; }
@@ -248,7 +252,7 @@
     box-shadow: var(--shadow);
   }
   .csv-card .csv-card-title {
-    background: var(--accent);
+    background: var(--accent-solid);
     color: #fff;
     padding: 12px 18px;
     font-size: 18px;
@@ -322,7 +326,7 @@
     white-space: nowrap;
   }
   table.csv-wide-table thead th {
-    background: var(--accent);
+    background: var(--accent-solid);
     color: #fff;
     position: sticky;
     top: 0;
@@ -342,7 +346,7 @@
 <div class="wrap">
 
   <header class="app-header">
-    <h1>📄 e-Gov書類コンバータ <span class="version">v1.0.2</span></h1>
+    <h1>📄 e-Gov書類コンバータ <span class="version">v1.0.3</span></h1>
   </header>
 
   <div class="tabs">
