@@ -10,6 +10,7 @@
     --surface: #ffffff;
     --surface-2: #f7f9fb;
     --border: #dde3ea;
+    --border-strong: #767676;
     --text: #1c2733;
     --text-muted: #5b6b7c;
     --accent: #1f4e79;
@@ -28,6 +29,7 @@
       --surface: #1c222b;
       --surface-2: #232a34;
       --border: #323b47;
+      --border-strong: #7d8a9c;
       --text: #e7ecf2;
       --text-muted: #98a4b3;
       --accent: #5b9bd9;
@@ -45,6 +47,7 @@
     --surface: #1c222b;
     --surface-2: #232a34;
     --border: #323b47;
+    --border-strong: #7d8a9c;
     --text: #e7ecf2;
     --text-muted: #98a4b3;
     --accent: #5b9bd9;
@@ -62,7 +65,8 @@
     margin: 0;
     background: var(--bg);
     color: var(--text);
-    font-family: "Hiragino Kaku Gothic ProN", "Yu Gothic", "Noto Sans JP", system-ui, sans-serif;
+    font-family: "Hiragino Kaku Gothic ProN", "Yu Gothic", "Noto Sans JP", sans-serif;
+    font-size: 16px;
     line-height: 1.7;
   }
   .wrap {
@@ -89,7 +93,7 @@
   header.app-header p {
     margin: 0;
     color: var(--text-muted);
-    font-size: 13.5px;
+    font-size: 16px;
   }
 
   .tabs {
@@ -104,7 +108,7 @@
     background: transparent;
     border: none;
     border-bottom: 3px solid transparent;
-    font-size: 14.5px;
+    font-size: 16px;
     font-weight: 600;
     color: var(--text-muted);
     cursor: pointer;
@@ -120,19 +124,19 @@
 
   .card {
     background: var(--surface);
-    border: 1px solid #949494;
+    border: 1px solid var(--border-strong);
     border-radius: var(--radius);
     padding: 20px;
     margin-bottom: 18px;
   }
   .card h2 {
-    font-size: 15px;
+    font-size: 18px;
     margin: 0 0 14px;
     color: var(--text);
   }
 
   .dropzone {
-    border: 2px dashed #8F959C;
+    border: 2px dashed var(--border-strong);
     border-radius: 10px;
     padding: 20px 14px;
     text-align: center;
@@ -141,23 +145,23 @@
     transition: border-color .15s, background .15s;
   }
   .dropzone:hover, .dropzone.dragover {
-    border-color: #14548A;
+    border-color: var(--accent-2);
     background: var(--accent-soft);
   }
   .dropzone:focus-visible {
-    outline: 2px solid #14548A;
+    outline: 2px solid var(--accent-2);
     outline-offset: 2px;
   }
   .dropzone .fname {
     display: block;
     margin-top: 6px;
-    font-size: 12.5px;
-    color: #595959;
+    font-size: 16px;
+    color: var(--text-muted);
     font-weight: 600;
     word-break: break-all;
   }
   .dropzone .icon { font-size: 22px; }
-  .dropzone .label { font-size: 13px; color: #595959; margin-top: 4px; }
+  .dropzone .label { font-size: 16px; color: var(--text-muted); margin-top: 4px; }
 
   .grid2 {
     display: grid;
@@ -178,13 +182,13 @@
   .inline-error {
     display: none;
     color: var(--danger);
-    font-size: 12.5px;
+    font-size: 16px;
     font-weight: 600;
   }
   .inline-error.show { display: inline; }
   button.btn {
     font-family: inherit;
-    font-size: 13.5px;
+    font-size: 16px;
     font-weight: 600;
     padding: 10px 18px;
     border-radius: 8px;
@@ -195,18 +199,18 @@
   button.btn:active { transform: translateY(1px); }
   button.btn:disabled { background: #e3e6ea; color: #9aa3ad; cursor: not-allowed; }
   button.btn:focus-visible {
-    outline: 2px solid #14548A;
+    outline: 2px solid var(--accent-2);
     outline-offset: 3px;
   }
   .btn-primary { background: var(--accent); color: #fff; }
   .btn-primary:hover:not(:disabled) { background: var(--accent-2); }
   button.btn-secondary { background: var(--surface-2); color: var(--text); border-color: var(--text); }
-  button.btn-secondary:hover:not(:disabled) { background: var(--accent-soft); border-color: #5B64AD; }
+  button.btn-secondary:hover:not(:disabled) { background: var(--accent-soft); border-color: var(--accent-2); }
   button.btn-clear { background: transparent; color: var(--text-muted); border-color: var(--text-muted); margin-left: auto; }
   button.btn-clear:hover:not(:disabled) { background: var(--danger-soft); color: var(--danger); border-color: var(--danger); }
 
   .status {
-    font-size: 12.5px;
+    font-size: 16px;
     margin-top: 10px;
     padding: 8px 12px;
     border-radius: 8px;
@@ -247,7 +251,7 @@
     background: var(--accent);
     color: #fff;
     padding: 12px 18px;
-    font-size: 14px;
+    font-size: 18px;
     font-weight: 700;
   }
   .csv-card table { width: 100%; border-collapse: collapse; }
@@ -255,25 +259,25 @@
   .csv-card th, .csv-card td {
     text-align: left;
     padding: 9px 18px;
-    font-size: 13.5px;
+    font-size: 16px;
     border-bottom: 1px solid #eef1f5;
     vertical-align: top;
   }
   .csv-card th { width: 38%; color: #5b6b7c; font-weight: 600; white-space: nowrap; }
   .csv-card td.amount { text-align: right; font-weight: 700; }
-  .csv-card tr.total-row th, .csv-card tr.total-row td { background: #eaf5ea; color: #1a5c1a; font-size: 15px; }
-  .csv-card .rich-note { padding: 14px 18px; font-size: 12px; color: #5b6b7c; border-top: 1px solid #eef1f5; background: #fafbfc; }
+  .csv-card tr.total-row th, .csv-card tr.total-row td { background: #eaf5ea; color: #1a5c1a; font-size: 18px; }
+  .csv-card .rich-note { padding: 14px 18px; font-size: 16px; color: #5b6b7c; border-top: 1px solid #eef1f5; background: #fafbfc; }
   .csv-card .rich-note a { color: var(--accent); }
 
   .hint {
-    font-size: 12px;
-    color: #595959;
+    font-size: 16px;
+    color: var(--text-muted);
     margin-top: 8px;
   }
 
   .csv-section { margin-bottom: 26px; }
   .csv-section-title {
-    font-size: 13.5px;
+    font-size: 18px;
     font-weight: 700;
     color: var(--accent);
     margin-bottom: 8px;
@@ -288,7 +292,7 @@
     margin-bottom: 20px;
   }
   .xml-result-set-title {
-    font-size: 13.5px;
+    font-size: 18px;
     font-weight: 700;
     color: var(--accent);
     margin-bottom: 10px;
@@ -308,7 +312,7 @@
     border-collapse: collapse;
     width: max-content;
     min-width: 100%;
-    font-size: 12.5px;
+    font-size: 16px;
     color: #1c2733;
   }
   table.csv-wide-table th, table.csv-wide-table td {
@@ -328,8 +332,8 @@
   table.csv-wide-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
   footer.note {
     text-align: center;
-    font-size: 11.5px;
-    color: #445465;
+    font-size: 16px;
+    color: var(--text-muted);
     margin-top: 24px;
   }
 </style>
@@ -338,7 +342,7 @@
 <div class="wrap">
 
   <header class="app-header">
-    <h1>📄 e-Gov書類コンバータ <span class="version">v1.0.1</span></h1>
+    <h1>📄 e-Gov書類コンバータ <span class="version">v1.0.2</span></h1>
   </header>
 
   <div class="tabs">
