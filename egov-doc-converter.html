@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>お知らせ書類コンバータ</title>
+<style>
+  :root {
+    --bg: #f2f4f7;
+    --surface: #ffffff;
+    --surface-2: #f7f9fb;
+    --border: #dde3ea;
+    --text: #1c2733;
+    --text-muted: #5b6b7c;
+    --accent: #1f4e79;
+    --accent-2: #2f6fa5;
+    --accent-soft: #e7f0f8;
+    --danger: #b3261e;
+    --danger-soft: #fdecea;
+    --success: #1a5c1a;
+    --success-soft: #eaf5ea;
+    --shadow: 0 2px 10px rgba(20, 30, 45, 0.08);
+    --radius: 14px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #14181f;
+      --surface: #1c222b;
+      --surface-2: #232a34;
+      --border: #323b47;
+      --text: #e7ecf2;
+      --text-muted: #98a4b3;
+      --accent: #5b9bd9;
+      --accent-2: #7db3e8;
+      --accent-soft: #22303e;
+      --danger: #ff8a80;
+      --danger-soft: #3a2323;
+      --success: #8fd18f;
+      --success-soft: #1f2f20;
+      --shadow: 0 2px 14px rgba(0,0,0,0.4);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #14181f;
+    --surface: #1c222b;
+    --surface-2: #232a34;
+    --border: #323b47;
+    --text: #e7ecf2;
+    --text-muted: #98a4b3;
+    --accent: #5b9bd9;
+    --accent-2: #7db3e8;
+    --accent-soft: #22303e;
+    --danger: #ff8a80;
+    --danger-soft: #3a2323;
+    --success: #8fd18f;
+    --success-soft: #1f2f20;
+    --shadow: 0 2px 14px rgba(0,0,0,0.4);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Hiragino Kaku Gothic ProN", "Yu Gothic", "Noto Sans JP", system-ui, sans-serif;
+    line-height: 1.7;
+  }
+  .wrap {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 28px 18px 60px;
+  }
+  header.app-header {
+    text-align: center;
+    margin-bottom: 22px;
+  }
+  header.app-header h1 {
+    font-size: 22px;
+    margin: 0 0 6px;
+    color: var(--accent);
+  }
+  header.app-header h1 .version {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-muted);
+    vertical-align: middle;
+    margin-left: 8px;
+  }
+  header.app-header p {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 13.5px;
+  }
+
+  .tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 18px;
+    border-bottom: 1px solid var(--border);
+  }
+  .tab-btn {
+    flex: 1;
+    padding: 12px 10px;
+    background: transparent;
+    border: none;
+    border-bottom: 3px solid transparent;
+    font-size: 14.5px;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .tab-btn.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid #949494;
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 18px;
+  }
+  .card h2 {
+    font-size: 15px;
+    margin: 0 0 14px;
+    color: var(--text);
+  }
+
+  .dropzone {
+    border: 2px dashed #8F959C;
+    border-radius: 10px;
+    padding: 20px 14px;
+    text-align: center;
+    cursor: pointer;
+    background: var(--surface-2);
+    transition: border-color .15s, background .15s;
+  }
+  .dropzone:hover, .dropzone.dragover {
+    border-color: #14548A;
+    background: var(--accent-soft);
+  }
+  .dropzone:focus-visible {
+    outline: 2px solid #14548A;
+    outline-offset: 2px;
+  }
+  .dropzone .fname {
+    display: block;
+    margin-top: 6px;
+    font-size: 12.5px;
+    color: #595959;
+    font-weight: 600;
+    word-break: break-all;
+  }
+  .dropzone .icon { font-size: 22px; }
+  .dropzone .label { font-size: 13px; color: #595959; margin-top: 4px; }
+
+  .grid2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  @media (max-width: 560px) {
+    .grid2 { grid-template-columns: 1fr; }
+  }
+
+  .actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+  }
+  .inline-error {
+    display: none;
+    color: var(--danger);
+    font-size: 12.5px;
+    font-weight: 600;
+  }
+  .inline-error.show { display: inline; }
+  button.btn {
+    font-family: inherit;
+    font-size: 13.5px;
+    font-weight: 600;
+    padding: 10px 18px;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: transform .05s;
+  }
+  button.btn:active { transform: translateY(1px); }
+  button.btn:disabled { background: #e3e6ea; color: #9aa3ad; cursor: not-allowed; }
+  button.btn:focus-visible {
+    outline: 2px solid #14548A;
+    outline-offset: 3px;
+  }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover:not(:disabled) { background: var(--accent-2); }
+  button.btn-secondary { background: var(--surface-2); color: var(--text); border-color: var(--text); }
+  button.btn-secondary:hover:not(:disabled) { background: var(--accent-soft); border-color: #5B64AD; }
+  button.btn-clear { background: transparent; color: var(--text-muted); border-color: var(--text-muted); margin-left: auto; }
+  button.btn-clear:hover:not(:disabled) { background: var(--danger-soft); color: var(--danger); border-color: var(--danger); }
+
+  .status {
+    font-size: 12.5px;
+    margin-top: 10px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    display: none;
+  }
+  .status.show { display: block; }
+  .status.info { background: var(--accent-soft); color: var(--accent); }
+  .status.error { background: var(--danger-soft); color: var(--danger); }
+  .status.success { background: var(--success-soft); color: var(--success); }
+
+  .result-frame-wrap {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    background: #fff;
+    margin-top: 16px;
+  }
+  iframe.result-frame {
+    width: 100%;
+    height: 640px;
+    border: none;
+    display: block;
+    background: #fff;
+  }
+
+  /* CSV card output */
+  .csv-result { margin-top: 16px; }
+  .csv-card {
+    background: #fff;
+    color: #1c2733;
+    border: 1px solid #dde3ea;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 18px;
+    box-shadow: var(--shadow);
+  }
+  .csv-card .csv-card-title {
+    background: var(--accent);
+    color: #fff;
+    padding: 12px 18px;
+    font-size: 14px;
+    font-weight: 700;
+  }
+  .csv-card table { width: 100%; border-collapse: collapse; }
+  .csv-card tr:nth-child(even) { background: #f7f9fb; }
+  .csv-card th, .csv-card td {
+    text-align: left;
+    padding: 9px 18px;
+    font-size: 13.5px;
+    border-bottom: 1px solid #eef1f5;
+    vertical-align: top;
+  }
+  .csv-card th { width: 38%; color: #5b6b7c; font-weight: 600; white-space: nowrap; }
+  .csv-card td.amount { text-align: right; font-weight: 700; }
+  .csv-card tr.total-row th, .csv-card tr.total-row td { background: #eaf5ea; color: #1a5c1a; font-size: 15px; }
+  .csv-card .rich-note { padding: 14px 18px; font-size: 12px; color: #5b6b7c; border-top: 1px solid #eef1f5; background: #fafbfc; }
+  .csv-card .rich-note a { color: var(--accent); }
+
+  .hint {
+    font-size: 12px;
+    color: #595959;
+    margin-top: 8px;
+  }
+
+  .csv-section { margin-bottom: 26px; }
+  .csv-section-title {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+
+  .xml-result-set {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 16px;
+    margin-bottom: 20px;
+  }
+  .xml-result-set-title {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 10px;
+    word-break: break-all;
+  }
+  .xml-result-set.xml-result-set-error .xml-result-set-title { color: var(--danger); }
+  .xml-result-set .result-frame-wrap { margin: 0 0 12px; }
+  .xml-result-set .actions { margin-top: 0; }
+  .csv-table-wrap {
+    overflow-x: auto;
+    border: 1px solid #dde3ea;
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    background: #fff;
+  }
+  table.csv-wide-table {
+    border-collapse: collapse;
+    width: max-content;
+    min-width: 100%;
+    font-size: 12.5px;
+    color: #1c2733;
+  }
+  table.csv-wide-table th, table.csv-wide-table td {
+    padding: 7px 12px;
+    border-bottom: 1px solid #eef1f5;
+    border-right: 1px solid #f2f4f7;
+    white-space: nowrap;
+  }
+  table.csv-wide-table thead th {
+    background: var(--accent);
+    color: #fff;
+    position: sticky;
+    top: 0;
+    font-weight: 600;
+  }
+  table.csv-wide-table tbody tr:nth-child(even) { background: #f7f9fb; }
+  table.csv-wide-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  footer.note {
+    text-align: center;
+    font-size: 11.5px;
+    color: #445465;
+    margin-top: 24px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="app-header">
+    <h1>📄 e-Gov書類コンバータ <span class="version">v1.0.0</span></h1>
+  </header>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="xml">XML + XSL → HTML / PDF</button>
+    <button class="tab-btn" data-tab="csv">CSV → 整形表示</button>
+  </div>
+
+  <!-- ===================== XML/XSL TAB ===================== -->
+  <section id="panel-xml" class="panel active">
+    <div class="card">
+      <h2>ファイルを選択</h2>
+      <div class="dropzone" id="dz-xml" tabindex="0" role="button" aria-label="XML・XSL・ZIPファイルを選択">
+        <div class="icon">📰🎨</div>
+        <div class="label">XML・XSLファイル、またはe-Gov等のZIPファイルをまとめて<br>（クリックまたはドラッグ＆ドロップ）</div>
+        <span class="fname" id="fname-xml"></span>
+        <input type="file" id="input-xml" accept=".xml,.xsl,.xslt,.zip" multiple hidden>
+      </div>
+      <div class="hint">拡張子（.xml / .xsl・.xslt）から自動で判別します。複数の組み合わせをまとめて放り込んでもOKです（XML内のxml-stylesheet指定から対応するXSLを自動で紐付けます）。ZIPファイルはその場で展開し、中のXML・XSLのみを取り出します（CSVなど他のファイルは無視されます）。</div>
+      <div class="actions">
+        <button class="btn btn-primary" id="btn-transform">HTMLに変換して表示</button>
+        <span class="inline-error" id="err-transform"></span>
+        <button class="btn btn-clear" id="btn-clear-xml">クリア</button>
+      </div>
+      <div class="status" id="status-xml"></div>
+    </div>
+
+    <div id="xml-results-container"></div>
+  </section>
+
+
+  <!-- ===================== CSV TAB ===================== -->
+  <section id="panel-csv" class="panel">
+    <div class="card">
+      <h2>CSVファイルを選択</h2>
+      <div class="dropzone" id="dz-csv" data-input="input-csv" tabindex="0" role="button" aria-label="CSVファイルを選択">
+        <div class="icon">📊</div>
+        <div class="label">CSVファイル（複数選択・複数ファイル分割パターンにも対応／Shift_JIS・UTF-8自動判定）<br>（クリックまたはドラッグ＆ドロップ、複数可）</div>
+        <span class="fname" id="fname-csv"></span>
+        <input type="file" id="input-csv" accept=".csv" multiple hidden>
+      </div>
+      <div class="hint">「ヘッダー」「明細」「明細合計」「合計」のように複数CSVに分かれている場合は、まとめて選択してください。</div>
+      <div class="actions">
+        <button class="btn btn-primary" id="btn-csv-format">見やすく整形する</button>
+        <span class="inline-error" id="err-csv-format"></span>
+        <button class="btn btn-clear" id="btn-clear-csv">クリア</button>
+      </div>
+      <div class="status" id="status-csv"></div>
+    </div>
+
+    <div class="csv-result" id="csv-result"></div>
+    <div id="csv-result-actions"></div>
+  </section>
+
+  <footer class="note">すべての処理はこのページ内（あなたのブラウザ）で完結し、ファイルは外部に送信されません。</footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script>
+(function(){
+  "use strict";
+
+  /* ---------- inline button errors (「変換可能なファイルがありません」等) ---------- */
+  function showInlineError(id, msg) {
+    const el = document.getElementById(id);
+    el.textContent = msg;
+    el.classList.add("show");
+  }
+  function clearInlineError(id) {
+    const el = document.getElementById(id);
+    el.textContent = "";
+    el.classList.remove("show");
+  }
+  function clearAllInlineErrors() {
+    clearInlineError("err-transform");
+    clearInlineError("err-csv-format");
+  }
+  // タブ操作・他ボタン押下（キャプチャ段階で先に消し、各ボタン自身のハンドラが
+  // 必要ならバブリング段階で改めて表示し直す）／ページのblurで消える
+  document.addEventListener("click", (e) => {
+    if (e.target.closest("button")) clearAllInlineErrors();
+  }, true);
+  window.addEventListener("blur", clearAllInlineErrors);
+
+  /* ---------- tab switching ---------- */
+  document.querySelectorAll(".tab-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+      document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+      btn.classList.add("active");
+      document.getElementById("panel-" + btn.dataset.tab).classList.add("active");
+    });
+  });
+
+  /* ---------- generic dropzone wiring ---------- */
+  function wireDropzone(zoneId, inputId, onFile, multiple) {
+    const zone = document.getElementById(zoneId);
+    const input = document.getElementById(inputId);
+    zone.addEventListener("click", () => input.click());
+    zone.addEventListener("keydown", e => {
+      if (e.key === "Enter" || e.key === " " || e.key === "Spacebar") {
+        e.preventDefault();
+        input.click();
+      }
+    });
+    input.addEventListener("change", () => {
+      if (!input.files.length) return;
+      multiple ? onFile(Array.from(input.files)) : onFile(input.files[0]);
+    });
+    ["dragover","dragenter"].forEach(ev => zone.addEventListener(ev, e => {
+      e.preventDefault(); zone.classList.add("dragover");
+    }));
+    ["dragleave","drop"].forEach(ev => zone.addEventListener(ev, e => {
+      e.preventDefault(); zone.classList.remove("dragover");
+    }));
+    zone.addEventListener("drop", e => {
+      const files = e.dataTransfer.files;
+      if (!files.length) return;
+      input.files = files;
+      multiple ? onFile(Array.from(files)) : onFile(files[0]);
+    });
+  }
+
+  function setStatus(idOrEl, msg, kind) {
+    const el = typeof idOrEl === "string" ? document.getElementById(idOrEl) : idOrEl;
+    if (!el) return;
+    el.textContent = msg;
+    el.className = "status show " + (kind || "info");
+  }
+  function clearStatus(idOrEl) {
+    const el = typeof idOrEl === "string" ? document.getElementById(idOrEl) : idOrEl;
+    if (!el) return;
+    el.className = "status";
+  }
+
+  /* ---- shared: revive HTML that a browser's XSLTProcessor/innerHTML pipeline
+     re-escaped because disable-output-escaping isn't honored outside a real
+     serializer. Only touches a small set of safe, recognizable patterns. ---- */
+  function reviveEscapedMarkup(escapedHtml) {
+    let s = escapedHtml;
+    s = s.replace(/&lt;br\s*\/?&gt;/gi, "<br>");
+    s = s.replace(/&lt;a\s+href=&quot;(https?:\/\/[^"&]+)&quot;&gt;([\s\S]*?)&lt;\/a&gt;/gi,
+      (m, url, label) => '<a href="' + url + '" target="_blank" rel="noopener">' + label + "</a>");
+    s = s.replace(/&amp;nbsp;/gi, "\u00A0");
+    return s;
+  }
+
+  /* ---------- encoding-aware text decode ---------- */
+  async function readAsTextAuto(file) {
+    const buf = await file.arrayBuffer();
+    try {
+      return new TextDecoder("utf-8", { fatal: true }).decode(buf);
+    } catch (e) {
+      try {
+        return new TextDecoder("shift_jis").decode(buf);
+      } catch (e2) {
+        return new TextDecoder("utf-8").decode(buf); // last resort, may show mojibake
+      }
+    }
+  }
+
+  /* =========================================================
+     TAB 1: XML + XSL -> HTML / PDF (複数組み合わせ対応)
+     ========================================================= */
+  let xmlFiles = [];
+  let xslFiles = [];
+  let otherFiles = [];
+
+  /* ZIPファイルをその場で展開し、中のXML/XSLだけをFileオブジェクトとして取り出す
+     （CSVやその他のファイルは無視する。ネスト構造のパスは無視してファイル名だけ使う） */
+  async function expandZipsAndClassify(files) {
+    const expanded = [];
+    for (const f of files) {
+      if (f.name.toLowerCase().endsWith(".zip")) {
+        try {
+          setStatus("status-xml", "「" + f.name + "」を展開しています…", "info");
+          const zip = await JSZip.loadAsync(f);
+          const entries = Object.values(zip.files).filter(e => !e.dir);
+          for (const entry of entries) {
+            const entryName = entry.name.split(/[\\/]/).pop();
+            const lower = entryName.toLowerCase();
+            if (lower.endsWith(".xml") || lower.endsWith(".xsl") || lower.endsWith(".xslt")) {
+              const data = await entry.async("uint8array");
+              expanded.push(new File([data], entryName));
+            }
+            // .csv やその他のファイルはここで無視（CSVタブで別途対応）
+          }
+        } catch (zipErr) {
+          console.error(zipErr);
+          setStatus("status-xml", "「" + f.name + "」の展開に失敗しました: " + zipErr.message, "error");
+        }
+      } else {
+        expanded.push(f);
+      }
+    }
+    return expanded;
+  }
+
+  wireDropzone("dz-xml", "input-xml", async (files) => {
+    const expanded = await expandZipsAndClassify(files);
+    expanded.forEach(f => {
+      const name = f.name.toLowerCase();
+      if (name.endsWith(".xsl") || name.endsWith(".xslt")) {
+        xslFiles.push(f);
+      } else if (name.endsWith(".xml")) {
+        xmlFiles.push(f);
+      } else {
+        otherFiles.push(f); // XML/XSL以外は変換対象外（表示のみ）
+      }
+    });
+    updateXmlFname();
+    updateXmlButtons();
+    if (!xmlFiles.length && !xslFiles.length) {
+      setStatus("status-xml", "XMLまたはXSLファイルが見つかりませんでした。", "error");
+    } else {
+      clearStatus("status-xml");
+    }
+  }, true);
+
+  function updateXmlFname() {
+    const parts = [];
+    if (xmlFiles.length) parts.push("XML " + xmlFiles.length + "件（" + xmlFiles.map(f => f.name).join(" / ") + "）");
+    if (xslFiles.length) parts.push("XSL " + xslFiles.length + "件（" + xslFiles.map(f => f.name).join(" / ") + "）");
+    if (otherFiles.length) parts.push("その他 " + otherFiles.length + "件（" + otherFiles.map(f => f.name).join(" / ") + "）");
+    document.getElementById("fname-xml").textContent = parts.join(" ／ ");
+  }
+  function updateXmlButtons() {
+    clearInlineError("err-transform");
+  }
+
+  /* XML内のxml-stylesheet宣言から、対応するXSLファイルを自動で紐付ける */
+  function findPairedXsl(xmlText) {
+    const m = xmlText.match(/<\?xml-stylesheet[^>]*href=["']([^"']+)["'][^>]*\?>/i);
+    if (m) {
+      const hrefBase = m[1].split(/[\\/]/).pop().toLowerCase();
+      const found = xslFiles.find(f => f.name.toLowerCase() === hrefBase);
+      if (found) return found;
+    }
+    if (xslFiles.length === 1) return xslFiles[0];
+    return null;
+  }
+
+  /* XML文字列 + XSL文字列 → 変換後HTML文字列（失敗時は例外を投げる） */
+  async function transformXmlWithXslText(xmlText, xslText) {
+    const parser = new DOMParser();
+    const xmlDoc = parser.parseFromString(xmlText, "application/xml");
+    const xslDoc = parser.parseFromString(xslText, "application/xml");
+
+    if (xmlDoc.querySelector("parsererror")) throw new Error("XMLファイルの解析に失敗しました。ファイルが壊れているか、形式が正しくない可能性があります。");
+    if (xslDoc.querySelector("parsererror")) throw new Error("XSLファイルの解析に失敗しました。ファイルが壊れているか、形式が正しくない可能性があります。");
+    if (typeof XSLTProcessor === "undefined") throw new Error("お使いのブラウザはXSLT変換に対応していません。");
+
+    const xsltProcessor = new XSLTProcessor();
+    try {
+      xsltProcessor.importStylesheet(xslDoc);
+    } catch (impErr) {
+      throw new Error("XSLの読み込みに失敗しました: " + impErr.message);
+    }
+
+    let bodyMarkup = null;
+    try {
+      const fragment = xsltProcessor.transformToFragment(xmlDoc, document);
+      if (fragment && fragment.childNodes.length) {
+        const container = document.createElement("div");
+        container.appendChild(fragment);
+        bodyMarkup = container.innerHTML;
+      }
+    } catch (e1) { /* fall through */ }
+
+    if (!bodyMarkup) {
+      try {
+        const resultDoc = xsltProcessor.transformToDocument(xmlDoc);
+        if (resultDoc && resultDoc.documentElement) {
+          bodyMarkup = new XMLSerializer().serializeToString(resultDoc.documentElement);
+        }
+      } catch (e2) { /* fall through */ }
+    }
+
+    if (!bodyMarkup) {
+      const rootName = xmlDoc.documentElement ? xmlDoc.documentElement.localName : null;
+      const templates = Array.from(xslDoc.getElementsByTagNameNS("http://www.w3.org/1999/XSL/Transform", "template"));
+      const matchPatterns = templates.map(t => t.getAttribute("match")).filter(Boolean);
+      const rootMatched = rootName && matchPatterns.some(p =>
+        p.split("|").some(seg => seg.trim() === rootName || seg.trim() === "*" || seg.trim().endsWith("/" + rootName))
+      );
+      if (rootName && !rootMatched) {
+        throw new Error(
+          "XMLのルート要素「" + rootName + "」に一致するテンプレートが、このXSLファイルには見つかりませんでした。組み合わせ（ペア）違いの可能性が高いです。"
+        );
+      }
+      throw new Error(
+        "変換結果が空でした（ルート要素「" + (rootName || "不明") + "」はXSL内のテンプレートと一致していますが、出力を生成できませんでした）。"
+      );
+    }
+    bodyMarkup = reviveEscapedMarkup(bodyMarkup);
+    // e-Gov/e-Tax系のXSLでは <pre> に word-wrap はあっても white-space が
+    // 指定されておらず、モダンブラウザでは折り返されずレイアウトが崩れる
+    // （隣接ブロックに文章が乗り上げる）ことがあるため、強制的に補正する。
+    const preWrapFix = "<style>pre{white-space:pre-wrap !important;overflow-wrap:break-word !important;word-break:break-word !important;}</style>";
+    return "<!DOCTYPE html><html><head><meta charset=\"UTF-8\">" + preWrapFix + "</head>" +
+           (bodyMarkup.includes("<body") ? bodyMarkup : "<body>" + bodyMarkup + "</body>") +
+           "</html>";
+  }
+
+  function buildResultSetElement(title, fullHtml, baseName) {
+    const wrap = document.createElement("div");
+    wrap.className = "xml-result-set";
+
+    const h = document.createElement("div");
+    h.className = "xml-result-set-title";
+    h.textContent = title;
+    wrap.appendChild(h);
+
+    const frameWrap = document.createElement("div");
+    frameWrap.className = "result-frame-wrap";
+    const iframe = document.createElement("iframe");
+    iframe.className = "result-frame";
+    iframe.title = "変換結果プレビュー";
+    iframe.srcdoc = fullHtml;
+    frameWrap.appendChild(iframe);
+    wrap.appendChild(frameWrap);
+
+    const actions = document.createElement("div");
+    actions.className = "actions";
+
+    const btnHtml = document.createElement("button");
+    btnHtml.className = "btn btn-secondary";
+    btnHtml.textContent = "HTMLとして保存";
+    btnHtml.addEventListener("click", () => doSave(fullHtml, baseName + ".html", setStatusEl));
+
+    const btnPdf = document.createElement("button");
+    btnPdf.className = "btn btn-secondary";
+    btnPdf.textContent = "PDFとして保存";
+    btnPdf.addEventListener("click", () => {
+      if (!iframe.contentDocument || !iframe.contentDocument.body) return;
+      exportElementToPdf(iframe.contentDocument.body, baseName + ".pdf", setStatusEl);
+    });
+
+    actions.appendChild(btnHtml);
+    actions.appendChild(btnPdf);
+    wrap.appendChild(actions);
+
+    const setStatusEl = document.createElement("div");
+    setStatusEl.className = "status";
+    wrap.appendChild(setStatusEl);
+
+    return wrap;
+  }
+
+  function buildErrorSetElement(title, message) {
+    const wrap = document.createElement("div");
+    wrap.className = "xml-result-set xml-result-set-error";
+    const h = document.createElement("div");
+    h.className = "xml-result-set-title";
+    h.textContent = title;
+    wrap.appendChild(h);
+    const msg = document.createElement("div");
+    msg.className = "status show error";
+    msg.textContent = message;
+    wrap.appendChild(msg);
+    return wrap;
+  }
+
+  document.getElementById("btn-transform").addEventListener("click", async () => {
+    clearStatus("status-xml");
+
+    if (!xmlFiles.length || !xslFiles.length) {
+      showInlineError("err-transform", "変換可能なファイルがありません");
+      return;
+    }
+    const container = document.getElementById("xml-results-container");
+    container.innerHTML = "";
+    setStatus("status-xml", "変換しています…", "info");
+
+    let ok = 0, ng = 0;
+    for (let i = 0; i < xmlFiles.length; i++) {
+      const xmlFile = xmlFiles[i];
+      const label = xmlFiles.length > 1 ? ((i + 1) + ". " + xmlFile.name) : xmlFile.name;
+      try {
+        const xmlText = await readAsTextAuto(xmlFile);
+        const pairedXsl = findPairedXsl(xmlText);
+        if (!pairedXsl) {
+          container.appendChild(buildErrorSetElement(
+            label,
+            "対応するXSLファイルを自動判別できませんでした。XML内のxml-stylesheet指定に一致するファイル名のXSLを一緒に選択するか、XSLを1つだけにして試してください。"
+          ));
+          ng++; continue;
+        }
+        const xslText = await readAsTextAuto(pairedXsl);
+        const fullHtml = await transformXmlWithXslText(xmlText, xslText);
+        const baseName = xmlFile.name.replace(/\.[^.]+$/, "");
+        container.appendChild(buildResultSetElement(label + "  →  " + pairedXsl.name, fullHtml, baseName));
+        ok++;
+      } catch (err) {
+        console.error(err);
+        container.appendChild(buildErrorSetElement(label, "エラー: " + err.message));
+        ng++;
+      }
+    }
+
+    if (ng === 0) setStatus("status-xml", ok + "件すべて変換できました。", "success");
+    else if (ok === 0) setStatus("status-xml", "すべて失敗しました（" + ng + "件）。各カードのエラー内容をご確認ください。", "error");
+    else setStatus("status-xml", ok + "件成功 / " + ng + "件失敗しました。各カードをご確認ください。", "info");
+  });
+
+  function suggestName(file, ext) {
+    const base = file ? file.name.replace(/\.[^.]+$/, "") : "document";
+    return base + "." + ext;
+  }
+
+  document.getElementById("btn-clear-xml").addEventListener("click", () => {
+    xmlFiles = []; xslFiles = []; otherFiles = [];
+    document.getElementById("input-xml").value = "";
+    document.getElementById("fname-xml").textContent = "";
+    document.getElementById("xml-results-container").innerHTML = "";
+    clearInlineError("err-transform");
+    clearStatus("status-xml");
+  });
+
+  /* =========================================================
+     TAB 2: CSV -> 整形カード表示
+     ========================================================= */
+  let csvFiles = [];
+  let csvOtherFiles = [];
+  let lastCsvContainer = null;
+
+  wireDropzone("dz-csv", "input-csv", (files) => {
+    csvFiles = [];
+    csvOtherFiles = [];
+    files.forEach(f => {
+      if (f.name.toLowerCase().endsWith(".csv")) {
+        csvFiles.push(f);
+      } else {
+        csvOtherFiles.push(f); // CSV以外は表示のみ・処理対象外
+      }
+    });
+    const parts = [];
+    if (csvFiles.length) parts.push("CSV " + csvFiles.length + "件（" + csvFiles.map(f => f.name).join(" / ") + "）");
+    if (csvOtherFiles.length) parts.push("その他 " + csvOtherFiles.length + "件（" + csvOtherFiles.map(f => f.name).join(" / ") + "）");
+    document.getElementById("fname-csv").textContent = parts.join(" ／ ");
+    clearInlineError("err-csv-format");
+  }, true);
+
+  function guessSectionLabel(filename) {
+    if (filename.includes("明細合計")) return "明細合計";
+    if (filename.includes("明細")) return "明細";
+    if (filename.includes("ヘッダー") || filename.includes("header")) return "ヘッダー情報";
+    if (filename.includes("合計")) return "合計";
+    return filename.replace(/\.[^.]+$/, "");
+  }
+
+  document.getElementById("btn-csv-format").addEventListener("click", async () => {
+    clearStatus("status-csv");
+    if (!csvFiles.length) {
+      showInlineError("err-csv-format", "変換可能なファイルがありません");
+      return;
+    }
+    const actionsContainer = document.getElementById("csv-result-actions");
+    actionsContainer.innerHTML = "";
+    try {
+      setStatus("status-csv", "整形しています…", "info");
+      const resultDiv = document.getElementById("csv-result");
+      resultDiv.innerHTML = "";
+      let totalRows = 0;
+
+      for (const file of csvFiles) {
+        const text = await readAsTextAuto(file);
+        const rows = parseCSV(text);
+        if (rows.length < 2) continue;
+        const header = rows[0];
+        const dataRows = rows.slice(1).filter(r => r.some(c => c && c.trim() !== ""));
+        if (!dataRows.length) continue;
+        totalRows += dataRows.length;
+
+        const section = document.createElement("div");
+        section.className = "csv-section";
+        if (csvFiles.length > 1) {
+          const h3 = document.createElement("div");
+          h3.className = "csv-section-title";
+          h3.textContent = "▸ " + guessSectionLabel(file.name) + "（" + file.name + "）";
+          section.appendChild(h3);
+        }
+
+        if (dataRows.length <= 1) {
+          // 1行だけ → 項目名:値のカード表示
+          dataRows.forEach((row, idx) => {
+            section.appendChild(buildCsvCard(header, row, idx, dataRows.length));
+          });
+        } else {
+          // 複数行 → 横スクロール可能なテーブル表示（等級別内訳など）
+          section.appendChild(buildCsvTable(header, dataRows));
+        }
+        resultDiv.appendChild(section);
+      }
+
+      if (!totalRows) throw new Error("データ行が見つかりませんでした。CSVの形式を確認してください。");
+      lastCsvContainer = resultDiv;
+      setStatus("status-csv", "整形が完了しました（" + csvFiles.length + "ファイル / 合計" + totalRows + "行）。", "success");
+
+      // 整形結果の下にPDF保存ボタンを配置（このボタン自体はPDFに写り込まない）
+      const actions = document.createElement("div");
+      actions.className = "actions";
+      const btnPdf = document.createElement("button");
+      btnPdf.className = "btn btn-secondary";
+      btnPdf.textContent = "PDFとして保存";
+      const setStatusEl = document.createElement("div");
+      setStatusEl.className = "status";
+      btnPdf.addEventListener("click", async () => {
+        const base = csvFiles.length === 1 ? csvFiles[0] : { name: csvFiles[0] ? csvFiles[0].name.replace(/_?\d*_?\.csv$/, "") : "csv整形結果" };
+        await exportElementToPdf(lastCsvContainer, suggestName(base, "pdf"), setStatusEl);
+      });
+      actions.appendChild(btnPdf);
+      actionsContainer.appendChild(actions);
+      actionsContainer.appendChild(setStatusEl);
+    } catch (err) {
+      console.error(err);
+      setStatus("status-csv", "エラー: " + err.message, "error");
+    }
+  });
+
+  /* ---- CSV parsing (RFC4180-ish, handles quotes/commas/embedded newlines) ---- */
+  function parseCSV(text) {
+    const rows = [];
+    let row = [], field = "", inQuotes = false;
+    text = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+    for (let i = 0; i < text.length; i++) {
+      const c = text[i];
+      if (inQuotes) {
+        if (c === '"') {
+          if (text[i+1] === '"') { field += '"'; i++; }
+          else { inQuotes = false; }
+        } else { field += c; }
+      } else {
+        if (c === '"') { inQuotes = true; }
+        else if (c === ',') { row.push(field); field = ""; }
+        else if (c === '\n') { row.push(field); rows.push(row); row = []; field = ""; }
+        else { field += c; }
+      }
+    }
+    if (field.length || row.length) { row.push(field); rows.push(row); }
+    return rows.filter(r => !(r.length === 1 && r[0] === ""));
+  }
+
+  /* ---- safe rich-text rendering: escape everything, then re-enable <br>/<a>/&nbsp; ---- */
+  function escapeHtml(s) {
+    return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+  function renderRichText(raw) {
+    return reviveEscapedMarkup(escapeHtml(raw));
+  }
+
+  const AMOUNT_KEY_RE = /(保険料|拠出金|合計額|合計|金額)/;
+  const TOTAL_KEY_RE = /合計額|合計/;
+  const RICH_KEY_RE = /(お知らせ|案内|備考|概要|注意)/;
+
+  function buildCsvCard(header, row, idx, total) {
+    const card = document.createElement("div");
+    card.className = "csv-card";
+
+    const title = document.createElement("div");
+    title.className = "csv-card-title";
+    title.textContent = total > 1 ? ("明細 " + (idx+1) + " / " + total) : "明細内容";
+    card.appendChild(title);
+
+    const table = document.createElement("table");
+    let noteHtml = "";
+
+    header.forEach((key, i) => {
+      const val = (row[i] || "").trim();
+      if (val === "") return;
+      const k = key.trim();
+
+      if (RICH_KEY_RE.test(k) && /</.test(val)) {
+        noteHtml += '<div>' + renderRichText(val) + '</div>';
+        return;
+      }
+
+      const tr = document.createElement("tr");
+      if (TOTAL_KEY_RE.test(k)) tr.className = "total-row";
+
+      const th = document.createElement("th");
+      th.textContent = k;
+      const td = document.createElement("td");
+
+      if (AMOUNT_KEY_RE.test(k) && /^[\d,]+$/.test(val)) {
+        td.className = "amount";
+        td.textContent = val + " 円";
+      } else if (/</.test(val)) {
+        td.innerHTML = renderRichText(val);
+      } else {
+        td.textContent = val;
+      }
+      tr.appendChild(th); tr.appendChild(td);
+      table.appendChild(tr);
+    });
+    card.appendChild(table);
+
+    if (noteHtml) {
+      const note = document.createElement("div");
+      note.className = "rich-note";
+      note.innerHTML = noteHtml;
+      card.appendChild(note);
+    }
+    return card;
+  }
+
+  /* ---- wide multi-row table (e.g. 等級別内訳) ---- */
+  document.getElementById("btn-clear-csv").addEventListener("click", () => {
+    csvFiles = []; csvOtherFiles = []; lastCsvContainer = null;
+    document.getElementById("input-csv").value = "";
+    document.getElementById("fname-csv").textContent = "";
+    document.getElementById("csv-result").innerHTML = "";
+    document.getElementById("csv-result-actions").innerHTML = "";
+    clearInlineError("err-csv-format");
+    clearStatus("status-csv");
+  });
+
+  const NUMERIC_RE = /^-?[\d,]+(\.\d+)?$/;
+  function buildCsvTable(header, dataRows) {
+    const wrap = document.createElement("div");
+    wrap.className = "csv-table-wrap";
+    const table = document.createElement("table");
+    table.className = "csv-wide-table";
+
+    const thead = document.createElement("thead");
+    const trh = document.createElement("tr");
+    header.forEach(h => {
+      const th = document.createElement("th");
+      th.textContent = h.trim();
+      trh.appendChild(th);
+    });
+    thead.appendChild(trh);
+    table.appendChild(thead);
+
+    const tbody = document.createElement("tbody");
+    dataRows.forEach(row => {
+      const tr = document.createElement("tr");
+      header.forEach((h, i) => {
+        const val = (row[i] || "").trim();
+        const td = document.createElement("td");
+        if (val !== "" && NUMERIC_RE.test(val)) {
+          td.className = "num";
+          td.textContent = val;
+        } else if (/</.test(val)) {
+          td.innerHTML = renderRichText(val);
+        } else {
+          td.textContent = val;
+        }
+        tr.appendChild(td);
+      });
+      tbody.appendChild(tr);
+    });
+    table.appendChild(tbody);
+    wrap.appendChild(table);
+    return wrap;
+  }
+
+  /* =========================================================
+     Shared: save via downloads capability
+     ========================================================= */
+  async function doSave(data, filename, statusId) {
+    try {
+      const downloads = await (window.claude ? window.claude.use("downloads") : null);
+      if (!downloads) {
+        fallbackDownload(data, filename);
+        return;
+      }
+      await downloads.save({ filename, data });
+      setStatus(statusId, "「" + filename + "」を保存しました。", "success");
+    } catch (err) {
+      if (err && err.code === "declined") {
+        setStatus(statusId, "保存がキャンセルされました。", "info");
+      } else {
+        console.error(err);
+        fallbackDownload(data, filename);
+      }
+    }
+  }
+
+  function fallbackDownload(data, filename) {
+    const blob = (data instanceof Blob) ? data : new Blob([data], { type: "text/html;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  /* ---- element -> multi-page PDF via html2canvas + jsPDF ---- */
+  async function exportElementToPdf(element, filename, statusId) {
+    try {
+      setStatus(statusId, "PDFを生成しています…", "info");
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        backgroundColor: "#ffffff",
+        useCORS: true
+      });
+      const { jsPDF } = window.jspdf;
+      const pageWidth = 595.28, pageHeight = 841.89; // A4 pt
+      const imgWidth = pageWidth;
+      const imgHeight = canvas.height * (imgWidth / canvas.width);
+      const pdf = new jsPDF("p", "pt", "a4");
+      const imgData = canvas.toDataURL("image/png");
+
+      let heightLeft = imgHeight;
+      let position = 0;
+      pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+      while (heightLeft > 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+      const blob = pdf.output("blob");
+      await doSave(blob, filename, statusId);
+    } catch (err) {
+      console.error(err);
+      setStatus(statusId, "PDF生成エラー: " + err.message, "error");
+    }
+  }
+
+})();
+</script>
+</body>
+</html>
