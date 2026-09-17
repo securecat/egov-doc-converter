@@ -41,11 +41,10 @@ e-Gov（電子政府の総合窓口）等からダウンロードできるXML形
 
 ## 更新履歴
 
-過去の全履歴は [CHANGELOG.md](./CHANGELOG.md) を参照してください。
+### [1.0.1] - 2026-09-18
 
-### [1.0.0] - 2026-09-18
+#### 修正
 
-#### 追加
+- CDN経由で読み込む外部スクリプト（html2canvas・jsPDF・JSZip）に `defer` 属性を追加
 
-- XML + XSLファイル（e-Gov等のZIP同梱）をHTML／PDFに変換する機能
-- CSVファイルをカード・表形式に整形して表示する機能
+全履歴は [CHANGELOG.md](./CHANGELOG.md) を参照。
