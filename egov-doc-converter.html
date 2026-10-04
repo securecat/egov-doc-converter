@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8">
+<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>e-Gov書類コンバータ</title>
 <style>
@@ -361,7 +361,7 @@
 <div class="wrap">
 
   <header class="app-header">
-    <h1>📄 e-Gov書類コンバータ <span class="version">v1.0.8</span></h1>
+    <h1>📄 e-Gov書類コンバータ <span class="version">v1.0.9</span></h1>
   </header>
 
   <div class="tabs">
@@ -662,7 +662,7 @@
     // 指定されておらず、モダンブラウザでは折り返されずレイアウトが崩れる
     // （隣接ブロックに文章が乗り上げる）ことがあるため、強制的に補正する。
     const preWrapFix = "<style>pre{white-space:pre-wrap !important;overflow-wrap:break-word !important;word-break:break-word !important;}</style>";
-    return "<!DOCTYPE html><html><head><meta charset=\"UTF-8\">" + preWrapFix + "</head>" +
+    return "<!DOCTYPE html><html><head><meta charset=\"utf-8\">" + preWrapFix + "</head>" +
            (bodyMarkup.includes("<body") ? bodyMarkup : "<body>" + bodyMarkup + "</body>") +
            "</html>";
   }
