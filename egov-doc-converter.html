@@ -666,7 +666,12 @@
     let bodyMarkup = null;
     try {
       const fragment = xsltProcessor.transformToFragment(xmlDoc, document);
-      if (fragment && fragment.childNodes.length) {
+      // XSLTポリフィルの transformToFragment は、method="xml" で DOCTYPE を
+      // 出力するXSL（e-Govの kagami.xsl など）だと、変換結果ではなく
+      // パースエラー表示（<parsererror>）を返してくる。その場合は採用せず、
+      // 下の transformToDocument にフォールバックする。
+      const isParseError = fragment && fragment.querySelector && fragment.querySelector("parsererror");
+      if (fragment && fragment.childNodes.length && !isParseError) {
         const container = document.createElement("div");
         container.appendChild(fragment);
         bodyMarkup = container.innerHTML;
