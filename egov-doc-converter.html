@@ -156,17 +156,45 @@
     border-radius: 10px;
     padding: 20px 14px;
     text-align: center;
-    cursor: pointer;
     background: var(--surface-2);
     transition: border-color .15s, background .15s;
   }
-  .dropzone:hover, .dropzone.dragover {
+  .dropzone.dragover {
     border-color: var(--accent-2);
     background: var(--accent-soft);
   }
-  .dropzone:focus-visible {
+  .dropzone .file-input {
+    display: block;
+    max-width: 100%;
+    margin: 10px auto 0;
+    font-family: inherit;
+    font-size: 16px;
+    color: var(--text);
+  }
+  .dropzone .file-input::file-selector-button {
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: 600;
+    padding: 10px 18px;
+    margin-right: 12px;
+    border-radius: 8px;
+    border: 1px solid var(--text);
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+  }
+  .dropzone .file-input::file-selector-button:hover {
+    background: var(--accent-soft);
+    border-color: var(--accent-2);
+  }
+  .dropzone .file-input:focus-visible {
     outline: 2px solid var(--accent-2);
-    outline-offset: 2px;
+    outline-offset: 3px;
+  }
+  .dropzone .drop-hint {
+    margin-top: 8px;
+    font-size: 16px;
+    color: var(--text-muted);
   }
   .dropzone .fname {
     display: block;
@@ -177,7 +205,7 @@
     word-break: break-all;
   }
   .dropzone .icon { font-size: 22px; }
-  .dropzone .label { font-size: 16px; color: var(--text-muted); margin-top: 4px; }
+  .dropzone .label { display: block; font-size: 16px; font-weight: 600; color: var(--text); margin-top: 4px; }
 
   .grid2 {
     display: grid;
@@ -373,11 +401,12 @@
   <section id="panel-xml" class="panel active">
     <div class="card">
       <h2>ファイルを選択</h2>
-      <div class="dropzone" id="dz-xml" tabindex="0" role="button" aria-label="XML・XSL・ZIPファイルを選択">
+      <div class="dropzone" id="dz-xml">
         <div class="icon">📰🎨</div>
-        <div class="label">XML・XSLファイル、またはe-Gov等のZIPファイルをまとめて<br>（クリックまたはドラッグ＆ドロップ）</div>
-        <span class="fname" id="fname-xml"></span>
-        <input type="file" id="input-xml" accept=".xml,.xsl,.xslt,.zip" multiple hidden>
+        <label class="label" for="input-xml">XML・XSLファイル、またはe-Gov等のZIPファイルを選択（複数可）</label>
+        <input type="file" class="file-input" id="input-xml" accept=".xml,.xsl,.xslt,.zip" multiple aria-describedby="drop-hint-xml">
+        <div class="drop-hint" id="drop-hint-xml">この枠にファイルをドラッグ＆ドロップしても追加できます。</div>
+        <span class="fname" id="fname-xml" aria-live="polite"></span>
       </div>
       <div class="hint">拡張子（.xml / .xsl・.xslt）から自動で判別します。複数の組み合わせをまとめて放り込んでもOKです（XML内のxml-stylesheet指定から対応するXSLを自動で紐付けます）。ZIPファイルはその場で展開し、中のXML・XSLのみを取り出します（CSVなど他のファイルは無視されます）。</div>
       <div class="actions">
@@ -396,11 +425,12 @@
   <section id="panel-csv" class="panel">
     <div class="card">
       <h2>CSVファイルを選択</h2>
-      <div class="dropzone" id="dz-csv" data-input="input-csv" tabindex="0" role="button" aria-label="CSVファイルを選択">
+      <div class="dropzone" id="dz-csv">
         <div class="icon">📊</div>
-        <div class="label">CSVファイル（複数選択・複数ファイル分割パターンにも対応／Shift_JIS・UTF-8自動判定）<br>（クリックまたはドラッグ＆ドロップ、複数可）</div>
-        <span class="fname" id="fname-csv"></span>
-        <input type="file" id="input-csv" accept=".csv" multiple hidden>
+        <label class="label" for="input-csv">CSVファイルを選択（複数可）</label>
+        <input type="file" class="file-input" id="input-csv" accept=".csv" multiple aria-describedby="drop-hint-csv">
+        <div class="drop-hint" id="drop-hint-csv">複数ファイルに分割されたCSVにも対応し、文字コード（Shift_JIS・UTF-8）は自動で判定します。この枠にファイルをドラッグ＆ドロップしても追加できます。</div>
+        <span class="fname" id="fname-csv" aria-live="polite"></span>
       </div>
       <div class="hint">「ヘッダー」「明細」「明細合計」「合計」のように複数CSVに分かれている場合は、まとめて選択してください。</div>
       <div class="actions">
@@ -461,13 +491,6 @@
   function wireDropzone(zoneId, inputId, onFile, multiple) {
     const zone = document.getElementById(zoneId);
     const input = document.getElementById(inputId);
-    zone.addEventListener("click", () => input.click());
-    zone.addEventListener("keydown", e => {
-      if (e.key === "Enter" || e.key === " " || e.key === "Spacebar") {
-        e.preventDefault();
-        input.click();
-      }
-    });
     input.addEventListener("change", () => {
       if (!input.files.length) return;
       multiple ? onFile(Array.from(input.files)) : onFile(input.files[0]);
