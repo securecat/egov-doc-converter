@@ -339,6 +339,7 @@
     margin-bottom: 20px;
   }
   .xml-result-set-title {
+    margin-top: 0;
     font-size: 18px;
     font-weight: 700;
     color: var(--accent);
@@ -392,13 +393,13 @@
     <h1>📄 e-Gov書類コンバータ <span class="version">v1.0.10</span></h1>
   </header>
 
-  <div class="tabs">
-    <button class="tab-btn active" data-tab="xml">XML + XSL → HTML / PDF</button>
-    <button class="tab-btn" data-tab="csv">CSV → 整形表示</button>
+  <div class="tabs" role="tablist" aria-label="変換の種類">
+    <button type="button" class="tab-btn active" id="tab-xml" data-tab="xml" role="tab" aria-selected="true" aria-controls="panel-xml">XML + XSL → HTML / PDF</button>
+    <button type="button" class="tab-btn" id="tab-csv" data-tab="csv" role="tab" aria-selected="false" aria-controls="panel-csv" tabindex="-1">CSV → 整形表示</button>
   </div>
 
   <!-- ===================== XML/XSL TAB ===================== -->
-  <section id="panel-xml" class="panel active">
+  <section id="panel-xml" class="panel active" role="tabpanel" aria-labelledby="tab-xml">
     <div class="card">
       <h2>ファイルを選択</h2>
       <div class="dropzone" id="dz-xml">
@@ -411,10 +412,10 @@
       <div class="hint">拡張子（.xml / .xsl・.xslt）から自動で判別します。複数の組み合わせをまとめて放り込んでもOKです（XML内のxml-stylesheet指定から対応するXSLを自動で紐付けます）。ZIPファイルはその場で展開し、中のXML・XSLのみを取り出します（CSVなど他のファイルは無視されます）。</div>
       <div class="actions">
         <button class="btn btn-primary" id="btn-transform">HTMLに変換して表示</button>
-        <span class="inline-error" id="err-transform"></span>
+        <span role="status"><span class="inline-error" id="err-transform"></span></span>
         <button class="btn btn-clear" id="btn-clear-xml">クリア</button>
       </div>
-      <div class="status" id="status-xml"></div>
+      <div role="status"><div class="status" id="status-xml"></div></div>
     </div>
 
     <div id="xml-results-container"></div>
@@ -422,7 +423,7 @@
 
 
   <!-- ===================== CSV TAB ===================== -->
-  <section id="panel-csv" class="panel">
+  <section id="panel-csv" class="panel" role="tabpanel" aria-labelledby="tab-csv">
     <div class="card">
       <h2>CSVファイルを選択</h2>
       <div class="dropzone" id="dz-csv">
@@ -435,10 +436,10 @@
       <div class="hint">「ヘッダー」「明細」「明細合計」「合計」のように複数CSVに分かれている場合は、まとめて選択してください。</div>
       <div class="actions">
         <button class="btn btn-primary" id="btn-csv-format">見やすく整形する</button>
-        <span class="inline-error" id="err-csv-format"></span>
+        <span role="status"><span class="inline-error" id="err-csv-format"></span></span>
         <button class="btn btn-clear" id="btn-clear-csv">クリア</button>
       </div>
-      <div class="status" id="status-csv"></div>
+      <div role="status"><div class="status" id="status-csv"></div></div>
     </div>
 
     <div class="csv-result" id="csv-result"></div>
@@ -477,15 +478,42 @@
   }, true);
   window.addEventListener("blur", clearAllInlineErrors);
 
-  /* ---------- tab switching ---------- */
-  document.querySelectorAll(".tab-btn").forEach(btn => {
-    btn.addEventListener("click", () => {
-      document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
-      document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
-      btn.classList.add("active");
-      document.getElementById("panel-" + btn.dataset.tab).classList.add("active");
+  /* ---------- tab switching (WAI-ARIA tabs pattern) ---------- */
+  const tabs = Array.from(document.querySelectorAll(".tab-btn"));
+  function selectTab(btn, moveFocus) {
+    tabs.forEach(b => {
+      const selected = b === btn;
+      b.classList.toggle("active", selected);
+      b.setAttribute("aria-selected", String(selected));
+      b.tabIndex = selected ? 0 : -1;
+      document.getElementById(b.getAttribute("aria-controls")).classList.toggle("active", selected);
+    });
+    if (moveFocus) btn.focus();
+  }
+  tabs.forEach((btn, i) => {
+    btn.addEventListener("click", () => selectTab(btn, false));
+    btn.addEventListener("keydown", e => {
+      let next = null;
+      if (e.key === "ArrowRight") next = tabs[(i + 1) % tabs.length];
+      else if (e.key === "ArrowLeft") next = tabs[(i - 1 + tabs.length) % tabs.length];
+      else if (e.key === "Home") next = tabs[0];
+      else if (e.key === "End") next = tabs[tabs.length - 1];
+      if (!next) return;
+      e.preventDefault();
+      clearAllInlineErrors();
+      selectTab(next, true);
     });
   });
+
+  /* 動的に作るステータス表示を、読み上げ用のライブリージョンで包む。
+     ライブリージョン自体は常に存在させておき、中身の表示・非表示や
+     文言の変化をスクリーンリーダーに通知させる。 */
+  function wrapInLiveRegion(el) {
+    const region = document.createElement("div");
+    region.setAttribute("role", "status");
+    region.appendChild(el);
+    return region;
+  }
 
   /* ---------- generic dropzone wiring ---------- */
   function wireDropzone(zoneId, inputId, onFile, multiple) {
@@ -740,7 +768,7 @@
     const wrap = document.createElement("div");
     wrap.className = "xml-result-set";
 
-    const h = document.createElement("div");
+    const h = document.createElement("h3");
     h.className = "xml-result-set-title";
     h.textContent = title;
     wrap.appendChild(h);
@@ -749,7 +777,8 @@
     frameWrap.className = "result-frame-wrap";
     const iframe = document.createElement("iframe");
     iframe.className = "result-frame";
-    iframe.title = "変換結果プレビュー";
+    // 複数ファイルを変換したときに区別できるよう、ファイル名を含める
+    iframe.title = "変換結果プレビュー：" + title;
     iframe.srcdoc = fullHtml;
     frameWrap.appendChild(iframe);
     wrap.appendChild(frameWrap);
@@ -776,7 +805,7 @@
 
     const setStatusEl = document.createElement("div");
     setStatusEl.className = "status";
-    wrap.appendChild(setStatusEl);
+    wrap.appendChild(wrapInLiveRegion(setStatusEl));
 
     return wrap;
   }
@@ -784,7 +813,7 @@
   function buildErrorSetElement(title, message) {
     const wrap = document.createElement("div");
     wrap.className = "xml-result-set xml-result-set-error";
-    const h = document.createElement("div");
+    const h = document.createElement("h3");
     h.className = "xml-result-set-title";
     h.textContent = title;
     wrap.appendChild(h);
@@ -945,7 +974,7 @@
       });
       actions.appendChild(btnPdf);
       actionsContainer.appendChild(actions);
-      actionsContainer.appendChild(setStatusEl);
+      actionsContainer.appendChild(wrapInLiveRegion(setStatusEl));
     } catch (err) {
       console.error(err);
       setStatus("status-csv", "エラー: " + err.message, "error");
