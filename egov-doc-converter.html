@@ -605,6 +605,46 @@
     return null;
   }
 
+  /* ---- XSLT engine ----
+     Chrome 158 以降はブラウザ組み込みの XSLT（XSLTProcessor）が削除されたため、
+     ネイティブ実装が使えない場合に限り、Chrome チーム公式のポリフィル
+     （libxslt の WebAssembly 版）を読み込んで XSLTProcessor を補う。
+     約1.5MBあるので、ページ読み込み時ではなく初回の変換時に読み込む。 */
+  const XSLT_POLYFILL_URL = "https://cdn.jsdelivr.net/npm/xslt-polyfill@1.0.36/xslt-polyfill.min.js";
+  let xsltReadyPromise = null;
+
+  function hasNativeXsltProcessor() {
+    if (typeof XSLTProcessor !== "function") return false;
+    if (!Function.prototype.toString.call(XSLTProcessor).includes("native code")) return false;
+    try {
+      new XSLTProcessor();
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function ensureXsltProcessor() {
+    if (hasNativeXsltProcessor()) return Promise.resolve();
+    if (!xsltReadyPromise) {
+      xsltReadyPromise = new Promise((resolve, reject) => {
+        window.xsltUsePolyfillOnlyIfNeeded = true;
+        const script = document.createElement("script");
+        script.src = XSLT_POLYFILL_URL;
+        script.charset = "utf-8";
+        script.onload = resolve;
+        script.onerror = () => reject(new Error("XSLT変換エンジンの読み込みに失敗しました。インターネット接続を確認してから、もう一度お試しください。"));
+        document.head.appendChild(script);
+      }).then(() => {
+        if (typeof window.xsltPolyfillReady === "function") return window.xsltPolyfillReady();
+      }).catch((err) => {
+        xsltReadyPromise = null; // 次回の変換時に再試行できるようにする
+        throw err;
+      });
+    }
+    return xsltReadyPromise;
+  }
+
   /* XML文字列 + XSL文字列 → 変換後HTML文字列（失敗時は例外を投げる） */
   async function transformXmlWithXslText(xmlText, xslText) {
     const parser = new DOMParser();
@@ -613,6 +653,7 @@
 
     if (xmlDoc.querySelector("parsererror")) throw new Error("XMLファイルの解析に失敗しました。ファイルが壊れているか、形式が正しくない可能性があります。");
     if (xslDoc.querySelector("parsererror")) throw new Error("XSLファイルの解析に失敗しました。ファイルが壊れているか、形式が正しくない可能性があります。");
+    await ensureXsltProcessor();
     if (typeof XSLTProcessor === "undefined") throw new Error("お使いのブラウザはXSLT変換に対応していません。");
 
     const xsltProcessor = new XSLTProcessor();

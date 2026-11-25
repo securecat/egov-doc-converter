@@ -37,7 +37,9 @@ e-Gov（電子政府の総合窓口）等からダウンロードできるXML形
 
 ## 動作環境
 
-`XSLTProcessor` に対応したモダンブラウザ（Chrome・Edge・Firefox・Safari等）が必要です。
+モダンブラウザ（Chrome・Edge・Firefox・Safari等）で動作します。
+
+Chrome 158 以降のように、ブラウザ組み込みの XSLT 変換（`XSLTProcessor`）が削除・無効化されているブラウザでは、初回の変換時に Chrome チーム公式の [XSLT Polyfill](https://github.com/mfreed7/xslt_polyfill)（約1.5MB）を CDN から読み込んで変換します。そのため、XML→HTML/PDF 変換にはインターネット接続が必要です。
 
 ## 更新履歴
 
