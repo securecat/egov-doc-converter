@@ -12,9 +12,9 @@ UIは WCAG 2.2 のレベル AA を目標とし、これを上限ではなく下�
 
 ## 対応している環境
 
-- ブラウザ：Chrome 158 で動作を確認しています。Edge・Firefox・Safari は、まだ試していません
+- ブラウザ：Chrome・Edge で動作を確認しています。Firefox・Safari は、まだ試していません
 - OS：Windows 11 で動作を確認しています。macOS・iOS・Android は、まだ試していません
-- スクリーンリーダー：まだ試していません
+- スクリーンリーダー：NVDA で動作を確認しています。ナレーター・PC-Talker・VoiceOver などは、まだ試していません
 
 ## 既知の制限
 
